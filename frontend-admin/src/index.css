@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 侧边栏导航区细滚动条 */
+aside nav::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+aside nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+aside nav::-webkit-scrollbar-thumb {
+  background-clip: content-box;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 0 solid transparent;
+  border-radius: 0;
+  visibility: hidden;
+}
+aside nav:hover::-webkit-scrollbar-thumb {
+  visibility: visible;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    @apply text-gray-800 bg-[#F0F2F5];
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+  }
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* 主按钮 —— TDesign 蓝 */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded
+           bg-primary-600 text-white text-sm font-normal
+           hover:bg-primary-700 active:bg-primary-800
+           transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed
+           border border-primary-600;
+  }
+  /* 次级按钮 —— 白底蓝边 */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded
+           bg-white text-gray-700 text-sm font-normal
+           border border-[#DCDCDC]
+           hover:border-primary-600 hover:text-primary-600
+           active:bg-gray-50
+           transition-colors duration-150;
+  }
+  /* 危险按钮 */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded
+           bg-white text-[#E34D59] text-sm
+           border border-[#DCDCDC]
+           hover:border-[#E34D59] hover:bg-red-50
+           transition-colors duration-150;
+  }
+  /* 卡片 */
+  .card {
+    @apply bg-white border border-[#DCDCDC] rounded shadow-none;
+  }
+  /* 输入框 */
+  .input {
+    @apply w-full px-3 py-1.5 rounded border border-[#DCDCDC] text-sm text-gray-800
+           outline-none bg-white
+           placeholder:text-gray-400
+           focus:border-primary-600 focus:ring-1 focus:ring-primary-600/20
+           transition-all duration-150;
+  }
+  /* 标签 */
+  .label {
+    @apply block text-sm text-gray-700 mb-1;
+  }
+  /* 页面标题 */
+  .page-title {
+    @apply text-base font-medium text-gray-900;
+  }
+  /* 表格容器 */
+  .t-table {
+    @apply w-full text-sm border-collapse;
+  }
+  .t-table thead tr {
+    @apply bg-[#F7F8FA];
+  }
+  .t-table thead th {
+    @apply px-4 py-3 text-left text-xs font-normal text-gray-500 border-b border-[#DCDCDC] whitespace-nowrap;
+  }
+  .t-table tbody tr {
+    @apply border-b border-[#F0F0F0] hover:bg-[#F7F8FA] transition-colors;
+  }
+  .t-table tbody td {
+    @apply px-4 py-3.5 text-gray-700;
+  }
+  /* 状态标签 */
+  .tag {
+    @apply inline-flex items-center px-2 py-0.5 text-xs rounded-sm font-normal;
+  }
+}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FileText, BarChart3, Zap, Target, CheckCircle, ArrowRight, User, LayoutDashboard, LogOut } from 'lucide-react'
+import { BarChart3, Zap, Target, CheckCircle, ArrowRight, User, LayoutDashboard, LogOut } from 'lucide-react'
 import { Logo } from '../components/Logo'
 import { useAuthStore } from '../store/auth'
 

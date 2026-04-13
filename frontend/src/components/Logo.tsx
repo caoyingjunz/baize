@@ -20,7 +20,7 @@ export function Logo({ variant = 'light', size = 'md', className = '' }: LogoPro
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* ── Logo mark: white "B" on violet→indigo gradient square ── */}
+      {/* ── Logo mark: cute whale on violet→indigo gradient square ── */}
       <svg
         width={iconSize}
         height={iconSize}
@@ -35,37 +35,33 @@ export function Logo({ variant = 'light', size = 'md', className = '' }: LogoPro
             <stop offset="1" stopColor="#4338ca" />
           </linearGradient>
         </defs>
+
+        {/* Background */}
         <rect width="36" height="36" rx="9" fill={`url(#${gradId})`} />
 
-        {/*
-          "B" letterform built with evenodd fill-rule:
-            • Outer path = full B silhouette (spine + two arched bumps)
-            • Two inner rectangles = the counters (holes inside each arch)
-        */}
+        {/* Whale body — chubby rounded shape, head left, tail right */}
         <path
-          fillRule="evenodd"
           fill="white"
-          d={[
-            // Outer B silhouette
-            'M10 9 L10 27',        // spine left edge down
-            'L18.5 27',            // bottom edge right
-            'C21.5 27 24 25 24 22',   // bottom arch outer curve
-            'C24 19 21.5 18 18.5 18', // bottom arch back to junction
-            'C21.5 18 23.5 16 23.5 13', // top arch outer curve start
-            'C23.5 10 21 9 18 9',    // top arch back to top
-            'Z',
-            // Top counter (hole inside top arch)
-            'M13.5 11.5 L17.5 11.5',
-            'Q20.5 11.5 20.5 14',
-            'Q20.5 16.5 17.5 16.5',
-            'L13.5 16.5 Z',
-            // Bottom counter (hole inside bottom arch, slightly wider)
-            'M13.5 19.5 L18 19.5',
-            'Q21.5 19.5 21.5 22.5',
-            'Q21.5 25.5 18 25.5',
-            'L13.5 25.5 Z',
-          ].join(' ')}
+          fillOpacity="0.93"
+          d="M9 17 Q9 11 17 11 Q25 11 26 17 Q30 14 31 11 Q30 17 27 19 Q30 22 31 27 Q29 23 26 22 Q25 28 17 28 Q9 28 7 23 Q5 20 9 17 Z"
         />
+
+        {/* Belly — lighter tint in lower front area */}
+        <path
+          fill="white"
+          fillOpacity="0.32"
+          d="M9 24 Q11 29 17 28 Q22 28 23 25 Q17 27 9 24 Z"
+        />
+
+        {/* Eye */}
+        <circle cx="10.5" cy="19" r="2" fill="#5b21b6" />
+        <circle cx="11.2" cy="18.3" r="0.75" fill="white" />
+
+        {/* Water spout — two arching streams above the blowhole */}
+        <path stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"
+              d="M14.5 11 Q13.5 8 14.5 6" />
+        <path stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"
+              d="M12 12 Q11 9.5 12 8" />
       </svg>
 
       {/* ── Wordmark ── */}

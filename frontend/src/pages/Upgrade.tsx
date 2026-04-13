@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, Loader2, ArrowLeft, Zap, Crown } from 'lucide-react'
 import { paymentApi, authApi } from '../services/api'

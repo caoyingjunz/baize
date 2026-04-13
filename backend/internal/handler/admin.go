@@ -3,9 +3,13 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/baize/backend/internal/auth"
+	"github.com/baize/backend/internal/config"
 	"github.com/baize/backend/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AdminHandler struct {
@@ -238,4 +242,46 @@ func (h *AdminHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)
+}
+
+// AdminPanelLogin authenticates with dedicated admin panel credentials (independent of baize user accounts).
+func (h *AdminHandler) AdminPanelLogin(c *gin.Context) {
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if config.App.AdminPassword == "" {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "管理后台未配置凭证"})
+		return
+	}
+	if req.Username != config.App.AdminUsername || req.Password != config.App.AdminPassword {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户名或密码错误"})
+		return
+	}
+	now := time.Now()
+	exp := now.Add(12 * time.Hour)
+	claims := &auth.Claims{
+		UserID:  0,
+		Email:   req.Username,
+		Tier:    "admin",
+		IsAdmin: true,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(config.App.JWTSecret))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "token生成失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"access_token": token,
+		"expires_in":   exp.Unix(),
+		"username":     req.Username,
+	})
 }

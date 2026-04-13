@@ -50,7 +50,7 @@ services:
       minio:
         condition: service_healthy
     environment:
-      SERVER_PORT: 8080
+      SERVER_PORT: 8088
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: root
@@ -65,8 +65,10 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       DEFAULT_AI_MODEL: ${DEFAULT_AI_MODEL:-deepseek}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     ports:
-      - "8080:8080"
+      - "8088:8088"
 
   frontend:
     build:
@@ -76,6 +78,17 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    depends_on:
+      - backend
+
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: baize-admin
+    restart: unless-stopped
+    ports:
+      - "8082:80"
     depends_on:
       - backend
 

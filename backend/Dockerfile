@@ -10,5 +10,5 @@ RUN apk --no-cache add ca-certificates tzdata
 ENV TZ=Asia/Shanghai
 WORKDIR /app
 COPY --from=builder /app/server .
-EXPOSE 8080
+EXPOSE 8088
 CMD ["./server"]
