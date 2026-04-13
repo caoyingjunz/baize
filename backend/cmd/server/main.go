@@ -31,7 +31,7 @@ func main() {
 
 	// CORS
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://baize.app"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:8082", "https://baize.app", "https://admin.baize.app"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -68,6 +68,10 @@ func main() {
 
 	// Admin routes
 	adminH := handler.NewAdminHandler()
+
+	// Admin panel auth (independent credentials, no user account required)
+	api.POST("/admin-auth/login", adminH.AdminPanelLogin)
+
 	adminGroup := api.Group("/admin", middleware.AuthRequired(), middleware.AdminOnly())
 
 	// Payment routes (protected)

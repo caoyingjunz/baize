@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '../store/auth'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 30000,
 })
 
@@ -21,7 +21,7 @@ api.interceptors.response.use(
       if (refreshToken) {
         try {
           const { data } = await axios.post(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/refresh`,
+            `${import.meta.env.VITE_API_URL || '/api'}/auth/refresh`,
             { refresh_token: refreshToken }
           )
           useAuthStore.getState().setTokens(data.access_token, data.refresh_token)

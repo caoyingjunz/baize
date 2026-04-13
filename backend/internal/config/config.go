@@ -37,6 +37,8 @@ type Config struct {
 	MinimaxAPIKey    string `yaml:"minimax_api_key"`
 	DefaultAIModel   string `yaml:"default_ai_model"`
 	EmailServer      EmailServerConfig `yaml:"email_server"`
+	AdminUsername    string `yaml:"admin_username"`
+	AdminPassword    string `yaml:"admin_password"`
 }
 
 var App Config
@@ -48,7 +50,7 @@ func Load() {
 
 	// Step 1: Load defaults from environment variables
 	App = Config{
-		ServerPort:      getEnv("SERVER_PORT", "8080"),
+		ServerPort:      getEnv("SERVER_PORT", "8088"),
 		DBHost:          getEnv("DB_HOST", "localhost"),
 		DBPort:          getEnv("DB_PORT", "3306"),
 		DBUser:          getEnv("DB_USER", "root"),
@@ -67,6 +69,8 @@ func Load() {
 		AnthropicAPIKey: getEnv("ANTHROPIC_API_KEY", ""),
 		MinimaxAPIKey:   getEnv("MINIMAX_API_KEY", ""),
 		DefaultAIModel:  getEnv("DEFAULT_AI_MODEL", "minimax"),
+		AdminUsername:   getEnv("ADMIN_USERNAME", "admin"),
+		AdminPassword:   getEnv("ADMIN_PASSWORD", ""),
 		EmailServer: EmailServerConfig{
 			SMTPHost:  getEnv("EMAIL_SMTP_HOST", ""),
 			SMTPPort:  getEnv("EMAIL_SMTP_PORT", "465"),
@@ -154,6 +158,12 @@ func loadYAMLConfig() {
 	}
 	if fileConfig.DefaultAIModel != "" {
 		App.DefaultAIModel = fileConfig.DefaultAIModel
+	}
+	if fileConfig.AdminUsername != "" {
+		App.AdminUsername = fileConfig.AdminUsername
+	}
+	if fileConfig.AdminPassword != "" {
+		App.AdminPassword = fileConfig.AdminPassword
 	}
 	// S3ForcePathStyle: check if explicitly set in YAML
 	var rawMap map[string]interface{}

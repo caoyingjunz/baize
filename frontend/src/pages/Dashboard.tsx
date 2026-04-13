@@ -50,17 +50,14 @@ export default function Dashboard() {
         <nav className="flex-1 p-4 space-y-1">
           <NavItem icon={<TrendingUp className="w-4 h-4" />} label="我的简历" active />
           <NavItem icon={<Clock className="w-4 h-4" />} label="修改历史" onClick={() => {}} />
-          {user?.is_admin && (
-            <NavItem icon={<ShieldCheck className="w-4 h-4" />} label="管理后台" onClick={() => navigate('/admin')} />
-          )}
         </nav>
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium text-sm">
-              {user?.nickname?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
+              {user?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.nickname || user?.email}</p>
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.username || user?.email}</p>
               <p className="text-xs text-gray-400">{user?.tier === 'pro' ? 'Pro 会员' : '免费版'}</p>
             </div>
           </div>
@@ -77,7 +74,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  你好，{user?.nickname || '同学'} 👋
+                  你好，{user?.username || '同学'} 👋
                 </h1>
                 <p className="text-gray-500 text-sm mt-1">上传简历，开始你的求职优化之旅</p>
               </div>

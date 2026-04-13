@@ -131,7 +131,7 @@ export default function AdminDashboard() {
               <PieChart>
                 <Pie data={modelPieData} dataKey="value" nameKey="name"
                   cx="50%" cy="50%" outerRadius={75} label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
+                    `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                   } labelLine={false}>
                   {modelPieData.map((entry, i) => (
                     <Cell key={entry.name}
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip formatter={(v) => [v, '用户数']} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                {tierBarData.map((entry, i) => (
+                {tierBarData.map((entry) => (
                   <Cell key={entry.name}
                     fill={entry.name === 'pro' ? '#7c3aed' : '#a78bfa'} />
                 ))}
