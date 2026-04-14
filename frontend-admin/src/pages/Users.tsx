@@ -5,6 +5,11 @@ import { adminApi, type AdminUserItem } from '../services/api'
 interface UserFormData {
   email: string; password: string; nickname: string; tier: string; is_admin: boolean; is_disabled: boolean
 }
+
+const fmtDate = (s: string) => {
+  const d = new Date(s)
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`
+}
 const defaultForm: UserFormData = { email: '', password: '', nickname: '', tier: 'free', is_admin: false, is_disabled: false }
 
 function UserModal({ mode, initial, onClose, onSave }: {
@@ -156,12 +161,8 @@ function SearchBar({ value, onChange, onSearch }: {
             onMouseEnter={e => (e.currentTarget.style.background = '#F2F3F5')}
             onMouseLeave={e => (e.currentTarget.style.background = 'none')}
           >
-            {/* 搜索过滤图标 */}
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <line x1="1.5" y1="7" x2="4" y2="7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-              <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.4"/>
-              <line x1="12" y1="9.5" x2="14" y2="11.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
+            {/* 搜索图标 */}
+            <Search className="w-4 h-4" />
           </button>
           {/* 属性选择下拉卡片 */}
           {attrOpen && (
@@ -220,9 +221,9 @@ function SearchBar({ value, onChange, onSearch }: {
   )
 }
 
-const MORE_ACTIONS = ['导出用户列表', '批量禁用', '批量删除']
+const MORE_ACTIONS_STATIC = ['导出用户列表', '批量禁用']
 
-function MoreActionsMenu() {
+function MoreActionsMenu({ selectedCount, onBatchDelete }: { selectedCount: number; onBatchDelete: () => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -259,7 +260,7 @@ function MoreActionsMenu() {
           borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,.1)',
           minWidth: 120, padding: '4px 0',
         }}>
-          {MORE_ACTIONS.map(action => (
+          {MORE_ACTIONS_STATIC.map(action => (
             <div
               key={action}
               onClick={() => setOpen(false)}
@@ -271,6 +272,16 @@ function MoreActionsMenu() {
               onMouseLeave={e => (e.currentTarget.style.background = '')}
             >{action}</div>
           ))}
+          <div
+            onClick={() => { if (selectedCount > 0) { onBatchDelete(); setOpen(false) } }}
+            style={{
+              padding: '7px 16px', fontSize: 12, cursor: selectedCount > 0 ? 'pointer' : 'not-allowed',
+              color: selectedCount > 0 ? '#E34D59' : '#C0C4CC',
+              fontFamily: '-apple-system, "system-ui", sans-serif',
+            }}
+            onMouseEnter={e => { if (selectedCount > 0) e.currentTarget.style.background = '#FFF5F5' }}
+            onMouseLeave={e => (e.currentTarget.style.background = '')}
+          >批量删除{selectedCount > 0 ? `（${selectedCount}）` : ''}</div>
         </div>
       )}
     </div>
@@ -316,6 +327,8 @@ export default function AdminUsers() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [togglingId, setTogglingId] = useState<number | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [confirmBatchDelete, setConfirmBatchDelete] = useState(false)
+  const [batchDeleting, setBatchDeleting] = useState(false)
 
   const allSelected = items.length > 0 && items.every(u => selectedIds.has(u.id))
   const someSelected = items.some(u => selectedIds.has(u.id)) && !allSelected
@@ -371,6 +384,16 @@ export default function AdminUsers() {
       setItems(prev => prev.filter(u => u.id !== id))
       setTotal(t => t - 1)
     } finally { setDeletingId(null); setConfirmDeleteId(null) }
+  }
+
+  const handleBatchDelete = async () => {
+    setBatchDeleting(true)
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => adminApi.deleteUser(id)))
+      setSelectedIds(new Set())
+      setConfirmBatchDelete(false)
+      load()
+    } finally { setBatchDeleting(false) }
   }
 
   return (
@@ -449,7 +472,24 @@ export default function AdminUsers() {
         </button>
 
         {/* 更多操作 下拉 */}
-        <MoreActionsMenu />
+        <MoreActionsMenu selectedCount={selectedIds.size} onBatchDelete={() => setConfirmBatchDelete(true)} />
+
+        {confirmBatchDelete && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
+            <span style={{ fontSize: 12, color: '#333', fontFamily: '-apple-system, "system-ui", sans-serif' }}>确认删除 {selectedIds.size} 个用户？</span>
+            <button onClick={handleBatchDelete} disabled={batchDeleting} style={{
+              height: 30, padding: '0 12px', fontSize: 12, color: '#fff',
+              background: '#E34D59', border: '1px solid #E34D59', borderRadius: 3,
+              cursor: batchDeleting ? 'not-allowed' : 'pointer', opacity: batchDeleting ? 0.6 : 1,
+              fontFamily: '-apple-system, "system-ui", sans-serif',
+            }}>{batchDeleting ? '删除中...' : '确认删除'}</button>
+            <button onClick={() => setConfirmBatchDelete(false)} style={{
+              height: 30, padding: '0 12px', fontSize: 12, color: '#333',
+              background: '#fff', border: '1px solid #DCDCDC', borderRadius: 3, cursor: 'pointer',
+              fontFamily: '-apple-system, "system-ui", sans-serif',
+            }}>取消</button>
+          </span>
+        )}
       </div>
 
       {/* 搜索栏 */}
@@ -520,7 +560,7 @@ export default function AdminUsers() {
                 </td>
                 <td className="text-gray-600">{u.analysis_used}</td>
                 <td className="text-gray-400 text-xs whitespace-nowrap">
-                  {new Date(u.created_at).toLocaleDateString('zh-CN')}
+                  {fmtDate(u.created_at)}
                 </td>
                 <td className="text-gray-500 text-xs">{u.email}</td>
                 <td style={{ textAlign: 'right' }}>

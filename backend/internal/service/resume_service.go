@@ -18,6 +18,7 @@ import (
 	"github.com/baize/backend/pkg/ai"
 	"github.com/baize/backend/pkg/parser"
 	alioss "github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"gorm.io/gorm"
 	"github.com/google/uuid"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -321,6 +322,9 @@ func (s *ResumeService) Analyze(ctx context.Context, req AnalyzeRequest) (*model
 		return nil, err
 	}
 
+	database.DB.Model(&model.User{}).Where("id = ?", req.UserID).
+		UpdateColumn("analysis_used", gorm.Expr("analysis_used + 1"))
+
 	s.saveVersion(resume, analysis.ID)
 	log.Printf("[service.Analyze] done elapsed=%s analysis_id=%d", time.Since(start), analysis.ID)
 	return analysis, nil
@@ -334,6 +338,17 @@ func (s *ResumeService) GetAnalysis(id, userID uint) (*model.Analysis, error) {
 	return &analysis, nil
 }
 
+func (s *ResumeService) DeleteAnalysis(id, userID uint) error {
+	result := database.DB.Where("id = ? AND user_id = ?", id, userID).Delete(&model.Analysis{})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("分析记录不存在")
+	}
+	return nil
+}
+
 func (s *ResumeService) ListVersions(resumeID, userID uint) ([]model.ResumeVersion, error) {
 	if _, err := s.GetByID(resumeID, userID); err != nil {
 		return nil, err
@@ -341,6 +356,44 @@ func (s *ResumeService) ListVersions(resumeID, userID uint) ([]model.ResumeVersi
 	var versions []model.ResumeVersion
 	err := database.DB.Where("resume_id = ?", resumeID).Order("version DESC").Find(&versions).Error
 	return versions, err
+}
+
+type UserAnalysisItem struct {
+	ID           uint      `json:"id"`
+	ResumeID     uint      `json:"resume_id"`
+	ResumeTitle  string    `json:"resume_title"`
+	TotalScore   int       `json:"total_score"`
+	JDMatchScore int       `json:"jd_match_score"`
+	ModelUsed    string    `json:"model_used"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func (s *ResumeService) ListAnalysesByUser(userID uint) ([]UserAnalysisItem, error) {
+	type row struct {
+		model.Analysis
+		ResumeTitle string
+	}
+	var rows []row
+	database.DB.Table("analyses").
+		Select("analyses.*, resumes.title as resume_title").
+		Joins("LEFT JOIN resumes ON resumes.id = analyses.resume_id").
+		Where("analyses.user_id = ?", userID).
+		Order("analyses.created_at DESC").
+		Scan(&rows)
+
+	items := make([]UserAnalysisItem, 0, len(rows))
+	for _, r := range rows {
+		items = append(items, UserAnalysisItem{
+			ID:           r.Analysis.ID,
+			ResumeID:     r.Analysis.ResumeID,
+			ResumeTitle:  r.ResumeTitle,
+			TotalScore:   r.Analysis.TotalScore,
+			JDMatchScore: r.Analysis.JDMatchScore,
+			ModelUsed:    r.Analysis.ModelUsed,
+			CreatedAt:    r.Analysis.CreatedAt,
+		})
+	}
+	return items, nil
 }
 
 func (s *ResumeService) StreamSuggestions(ctx context.Context, resumeID, userID uint, jdText, modelName string) (<-chan string, error) {

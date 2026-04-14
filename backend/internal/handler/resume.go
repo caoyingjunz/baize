@@ -151,6 +151,16 @@ func (h *ResumeHandler) StreamSuggestions(c *gin.Context) {
 	})
 }
 
+func (h *ResumeHandler) ListAnalyses(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	items, err := h.svc.ListAnalysesByUser(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"analyses": items})
+}
+
 func (h *ResumeHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("user_id")
 	var uri struct{ ID uint `uri:"id"` }
@@ -165,8 +175,36 @@ func (h *ResumeHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *ResumeHandler) ListVersions(c *gin.Context) {
+func (h *ResumeHandler) GetAnalysis(c *gin.Context) {
 	userID := c.GetUint("user_id")
+	var uri struct{ ID uint `uri:"id"` }
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+	analysis, err := h.svc.GetAnalysis(uri.ID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, analysis)
+}
+
+func (h *ResumeHandler) DeleteAnalysis(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	var uri struct{ ID uint `uri:"id"` }
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+	if err := h.svc.DeleteAnalysis(uri.ID, userID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *ResumeHandler) ListVersions(c *gin.Context) {	userID := c.GetUint("user_id")
 	var uri struct{ ID uint `uri:"id"` }
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
