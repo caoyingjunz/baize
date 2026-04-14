@@ -50,13 +50,14 @@ func (h *AdminHandler) ListUsers(c *gin.Context) {
 func (h *AdminHandler) ListResumes(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	q := c.Query("q")
 	if page < 1 {
 		page = 1
 	}
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 20
 	}
-	result, err := h.svc.ListResumes(c.Request.Context(), page, pageSize)
+	result, err := h.svc.ListResumes(c.Request.Context(), page, pageSize, q)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -113,13 +114,14 @@ func (h *AdminHandler) DeleteResume(c *gin.Context) {
 func (h *AdminHandler) ListAnalyses(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	q := c.Query("q")
 	if page < 1 {
 		page = 1
 	}
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 20
 	}
-	result, err := h.svc.ListAnalyses(c.Request.Context(), page, pageSize)
+	result, err := h.svc.ListAnalyses(c.Request.Context(), page, pageSize, q)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

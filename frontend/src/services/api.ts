@@ -118,6 +118,16 @@ interface RawAnalysis {
   created_at: string
 }
 
+export interface UserAnalysisItem {
+  id: number
+  resume_id: number
+  resume_title: string
+  total_score: number
+  jd_match_score: number
+  model_used: string
+  created_at: string
+}
+
 export const resumeApi = {
   upload: (file: File) => {
     const fd = new FormData()
@@ -129,6 +139,18 @@ export const resumeApi = {
   createFromText: (title: string, text: string) =>
     api.post<Resume>('/resumes/text', { title, text }),
   list: () => api.get<{ resumes: Resume[] }>('/resumes'),
+  listAnalyses: () => api.get<{ analyses: UserAnalysisItem[] }>('/resumes/analyses'),
+  getAnalysis: async (id: number): Promise<Analysis> => {
+    const { data } = await api.get<RawAnalysis>(`/resumes/analyses/${id}`)
+    return {
+      ...data,
+      detail_scores: typeof data.detail_scores === 'string' ? JSON.parse(data.detail_scores) : data.detail_scores,
+      issues: typeof data.issues === 'string' ? JSON.parse(data.issues) : data.issues,
+      suggestions: typeof data.suggestions === 'string' ? JSON.parse(data.suggestions) : data.suggestions,
+      jd_missing_keys: typeof data.jd_missing_keys === 'string' ? JSON.parse(data.jd_missing_keys || '[]') : (data.jd_missing_keys ?? []),
+    } as Analysis
+  },
+  deleteAnalysis: (id: number) => api.delete(`/resumes/analyses/${id}`),
   get: (id: number) => api.get<Resume>(`/resumes/${id}`),
   delete: (id: number) => api.delete(`/resumes/${id}`),
   analyze: async (id: number, jdText?: string, model?: string): Promise<Analysis> => {

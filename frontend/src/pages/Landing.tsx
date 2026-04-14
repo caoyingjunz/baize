@@ -304,18 +304,30 @@ export default function Landing() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link to="/register"
-                className="inline-flex items-center gap-2 bg-[#006eff] text-white text-[15px] font-medium
-                           px-7 py-3 rounded-md hover:bg-[#2b7afb] transition-colors duration-150
-                           shadow-[0_4px_16px_rgba(0,110,255,0.3)]">
-                免费开始使用
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link to="/login"
-                className="inline-flex items-center gap-1.5 text-[15px] text-gray-600 border border-gray-300
-                           px-7 py-3 rounded-md hover:border-[#006eff] hover:text-[#006eff] transition-colors duration-150">
-                已有账号，登录
-              </Link>
+              {accessToken ? (
+                <Link to="/dashboard"
+                  className="inline-flex items-center gap-2 bg-[#006eff] text-white text-[15px] font-medium
+                             px-7 py-3 rounded-md hover:bg-[#2b7afb] transition-colors duration-150
+                             shadow-[0_4px_16px_rgba(0,110,255,0.3)]">
+                  开始智能分析
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register"
+                    className="inline-flex items-center gap-2 bg-[#006eff] text-white text-[15px] font-medium
+                               px-7 py-3 rounded-md hover:bg-[#2b7afb] transition-colors duration-150
+                               shadow-[0_4px_16px_rgba(0,110,255,0.3)]">
+                    免费开始使用
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link to="/login"
+                    className="inline-flex items-center gap-1.5 text-[15px] text-gray-600 border border-gray-300
+                               px-7 py-3 rounded-md hover:border-[#006eff] hover:text-[#006eff] transition-colors duration-150">
+                    已有账号，登录
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

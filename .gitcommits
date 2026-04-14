@@ -40,3 +40,22 @@
 2026-04-12 18:49:22 feat: add 增购 upgrade flow — Order model, payment handler, Upgrade page, connected tier pill badge
 2026-04-12 19:31:15 style: remove 增购 connected pill from navbar tier badge
 2026-04-12 19:33:19 style: remove 产品功能/使用流程 from nav, rename 价格方案→价格, 注册→免费注册
+2026-04-13 10:00:22 style: replace B lettermark logo with cute whale SVG icon
+2026-04-13 12:02:38 feat: extract admin panel into standalone frontend-admin app with independent credentials
+2026-04-13 14:23:45 style: apply Tencent/TDesign visual style to admin panel
+2026-04-13 15:37:33 fix: 前端 baseURL 改为相对路径 /api，通过 nginx 代理转发到后端，修复生产环境请求无法到达后端的问题
+2026-04-13 15:44:55 chore: 后端端口从 8080 改为 8088
+2026-04-13 15:50:12 style: 管理后台侧边栏对齐腾讯云控制台风格，支持折叠、蓝色激活态、分类标题
+2026-04-13 15:58:20 style: 管理后台新增全宽顶部导航栏，含汉堡、Logo、面包屑、搜索框、用户信息
+2026-04-13 16:03:13 fix: 侧边栏折叠状态持久化到 localStorage，刷新后保持
+2026-04-13 16:33:16 style: 用户管理页对齐腾讯云控制台风格，状态圆点、操作文字链接、搜索过滤栏收进卡片
+2026-04-14 10:49:02 refactor: rewrite user Dashboard with Tencent Cloud console style
+2026-04-14 10:55:15 feat: show 开始智能分析 button on Landing hero when logged in
+2026-04-14 11:42:23 feat: add resume preview and analysis report modals in admin panel
+2026-04-14 13:01:56 feat: add multi-select and batch delete to Users, Resumes, Analyses admin pages
+2026-04-14 13:06:48 refactor: move Users batch delete into 更多操作 dropdown
+2026-04-14 13:10:37 refactor: move 新建/批量删除 toolbar into table card for Resumes and Analyses
+2026-04-14 13:12:26 refactor: move toolbar outside card for Resumes and Analyses pages
+2026-04-14 13:17:08 feat: add search by title/email to Resumes and Analyses admin pages
+2026-04-14 13:28:15 feat: rewrite AnalysisReportModal to match user-facing analysis style with radar chart
+2026-04-14 15:28:09 feat: replace 修改历史 with user analysis history tab in Dashboard

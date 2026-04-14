@@ -65,6 +65,7 @@ export interface AdminResumeItem {
   title: string
   file_type: string
   status: string
+  raw_text?: string
   created_at: string
 }
 
@@ -77,6 +78,11 @@ export interface AdminAnalysisItem {
   total_score: number
   jd_match_score: number
   model_used: string
+  detail_scores?: string
+  issues?: string
+  suggestions?: string
+  jd_text?: string
+  jd_missing_keys?: string
   created_at: string
 }
 
@@ -97,16 +103,16 @@ export const adminApi = {
     api.put<AdminUserItem>(`/admin/users/${id}`, data),
   deleteUser: (id: number) =>
     api.delete(`/admin/users/${id}`),
-  resumes: (page = 1, pageSize = 20) =>
-    api.get<PageResult<AdminResumeItem>>('/admin/resumes', { params: { page, page_size: pageSize } }),
+  resumes: (page = 1, pageSize = 20, q = '') =>
+    api.get<PageResult<AdminResumeItem>>('/admin/resumes', { params: { page, page_size: pageSize, q } }),
   createResume: (data: { user_id: number; title: string; file_type: string; status: string }) =>
     api.post<AdminResumeItem>('/admin/resumes', data),
   updateResume: (id: number, data: { title: string; status: string }) =>
     api.put<AdminResumeItem>(`/admin/resumes/${id}`, data),
   deleteResume: (id: number) =>
     api.delete(`/admin/resumes/${id}`),
-  analyses: (page = 1, pageSize = 20) =>
-    api.get<PageResult<AdminAnalysisItem>>('/admin/analyses', { params: { page, page_size: pageSize } }),
+  analyses: (page = 1, pageSize = 20, q = '') =>
+    api.get<PageResult<AdminAnalysisItem>>('/admin/analyses', { params: { page, page_size: pageSize, q } }),
   createAnalysis: (data: { resume_id: number; user_id: number; total_score: number; jd_match_score: number; model_used: string }) =>
     api.post<AdminAnalysisItem>('/admin/analyses', data),
   updateAnalysis: (id: number, data: { total_score: number; jd_match_score: number; model_used: string }) =>

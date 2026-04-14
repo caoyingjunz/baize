@@ -276,6 +276,7 @@ type AdminResumeItem struct {
 	Title     string    `json:"title"`
 	FileType  string    `json:"file_type"`
 	Status    string    `json:"status"`
+	RawText   string    `json:"raw_text,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -286,19 +287,25 @@ type ResumeListResult struct {
 	PageSize int               `json:"page_size"`
 }
 
-func (s *AdminService) ListResumes(_ context.Context, page, pageSize int) (*ResumeListResult, error) {
+func (s *AdminService) ListResumes(_ context.Context, page, pageSize int, q string) (*ResumeListResult, error) {
+	db := database.DB.Table("resumes").
+		Select("resumes.*, users.email as user_email").
+		Joins("LEFT JOIN users ON users.id = resumes.user_id")
+
+	if q != "" {
+		like := "%" + q + "%"
+		db = db.Where("resumes.title LIKE ? OR users.email LIKE ?", like, like)
+	}
+
 	var total int64
-	database.DB.Model(&model.Resume{}).Count(&total)
+	db.Count(&total)
 
 	type row struct {
 		model.Resume
 		UserEmail string
 	}
 	var rows []row
-	database.DB.Table("resumes").
-		Select("resumes.*, users.email as user_email").
-		Joins("LEFT JOIN users ON users.id = resumes.user_id").
-		Order("resumes.created_at DESC").
+	db.Order("resumes.created_at DESC").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Scan(&rows)
@@ -312,6 +319,7 @@ func (s *AdminService) ListResumes(_ context.Context, page, pageSize int) (*Resu
 			Title:     r.Resume.Title,
 			FileType:  r.Resume.FileType,
 			Status:    string(r.Resume.Status),
+			RawText:   r.Resume.RawText,
 			CreatedAt: r.Resume.CreatedAt,
 		})
 	}
@@ -416,15 +424,20 @@ func (s *AdminService) DeleteResume(_ context.Context, id uint) error {
 }
 
 type AdminAnalysisItem struct {
-	ID           uint      `json:"id"`
-	UserID       uint      `json:"user_id"`
-	UserEmail    string    `json:"user_email"`
-	ResumeID     uint      `json:"resume_id"`
-	ResumeTitle  string    `json:"resume_title"`
-	TotalScore   int       `json:"total_score"`
-	JDMatchScore int       `json:"jd_match_score"`
-	ModelUsed    string    `json:"model_used"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID            uint      `json:"id"`
+	UserID        uint      `json:"user_id"`
+	UserEmail     string    `json:"user_email"`
+	ResumeID      uint      `json:"resume_id"`
+	ResumeTitle   string    `json:"resume_title"`
+	TotalScore    int       `json:"total_score"`
+	JDMatchScore  int       `json:"jd_match_score"`
+	ModelUsed     string    `json:"model_used"`
+	DetailScores  string    `json:"detail_scores,omitempty"`
+	Issues        string    `json:"issues,omitempty"`
+	Suggestions   string    `json:"suggestions,omitempty"`
+	JDText        string    `json:"jd_text,omitempty"`
+	JDMissingKeys string    `json:"jd_missing_keys,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type AnalysisListResult struct {
@@ -434,9 +447,19 @@ type AnalysisListResult struct {
 	PageSize int                 `json:"page_size"`
 }
 
-func (s *AdminService) ListAnalyses(_ context.Context, page, pageSize int) (*AnalysisListResult, error) {
+func (s *AdminService) ListAnalyses(_ context.Context, page, pageSize int, q string) (*AnalysisListResult, error) {
+	db := database.DB.Table("analyses").
+		Select("analyses.*, users.email as user_email, resumes.title as resume_title").
+		Joins("LEFT JOIN users ON users.id = analyses.user_id").
+		Joins("LEFT JOIN resumes ON resumes.id = analyses.resume_id")
+
+	if q != "" {
+		like := "%" + q + "%"
+		db = db.Where("users.email LIKE ? OR resumes.title LIKE ?", like, like)
+	}
+
 	var total int64
-	database.DB.Model(&model.Analysis{}).Count(&total)
+	db.Count(&total)
 
 	type row struct {
 		model.Analysis
@@ -444,11 +467,7 @@ func (s *AdminService) ListAnalyses(_ context.Context, page, pageSize int) (*Ana
 		ResumeTitle string
 	}
 	var rows []row
-	database.DB.Table("analyses").
-		Select("analyses.*, users.email as user_email, resumes.title as resume_title").
-		Joins("LEFT JOIN users ON users.id = analyses.user_id").
-		Joins("LEFT JOIN resumes ON resumes.id = analyses.resume_id").
-		Order("analyses.created_at DESC").
+	db.Order("analyses.created_at DESC").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Scan(&rows)
@@ -456,15 +475,20 @@ func (s *AdminService) ListAnalyses(_ context.Context, page, pageSize int) (*Ana
 	items := make([]AdminAnalysisItem, 0, len(rows))
 	for _, r := range rows {
 		items = append(items, AdminAnalysisItem{
-			ID:           r.Analysis.ID,
-			UserID:       r.Analysis.UserID,
-			UserEmail:    r.UserEmail,
-			ResumeID:     r.Analysis.ResumeID,
-			ResumeTitle:  r.ResumeTitle,
-			TotalScore:   r.Analysis.TotalScore,
-			JDMatchScore: r.Analysis.JDMatchScore,
-			ModelUsed:    r.Analysis.ModelUsed,
-			CreatedAt:    r.Analysis.CreatedAt,
+			ID:            r.Analysis.ID,
+			UserID:        r.Analysis.UserID,
+			UserEmail:     r.UserEmail,
+			ResumeID:      r.Analysis.ResumeID,
+			ResumeTitle:   r.ResumeTitle,
+			TotalScore:    r.Analysis.TotalScore,
+			JDMatchScore:  r.Analysis.JDMatchScore,
+			ModelUsed:     r.Analysis.ModelUsed,
+			DetailScores:  r.Analysis.DetailScores,
+			Issues:        r.Analysis.Issues,
+			Suggestions:   r.Analysis.Suggestions,
+			JDText:        r.Analysis.JDText,
+			JDMissingKeys: r.Analysis.JDMissingKeys,
+			CreatedAt:     r.Analysis.CreatedAt,
 		})
 	}
 	return &AnalysisListResult{Items: items, Total: total, Page: page, PageSize: pageSize}, nil
