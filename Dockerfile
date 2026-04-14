@@ -1,7 +1,7 @@
 FROM swr.cn-north-4.myhuaweicloud.com/pixiu-public/905655347/golang:1.25-alpine AS backend-builder
 WORKDIR /build/backend
 COPY backend/go.mod backend/go.sum ./
-RUN go mod download
+RUN export GOPROXY=https://goproxy.cn/ && go mod download
 COPY backend/ ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/server ./cmd/server
 
